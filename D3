@@ -1,0 +1,211 @@
+1
+Assignment 3
+[1]:
+Downloading data from https://storage.googleapis.com/tensorflow/tf-kerasdatasets/
+train-labels-idx1-ubyte.gz
+29515/29515 0s 0us/step
+Downloading data from https://storage.googleapis.com/tensorflow/tf-kerasdatasets/
+train-images-idx3-ubyte.gz
+26421880/26421880 0s
+0us/step
+Downloading data from https://storage.googleapis.com/tensorflow/tf-kerasdatasets/
+t10k-labels-idx1-ubyte.gz
+5148/5148 0s 0us/step
+Downloading data from https://storage.googleapis.com/tensorflow/tf-kerasdatasets/
+t10k-images-idx3-ubyte.gz
+4422102/4422102 0s
+0us/step
+import tensorflow as tf
+import matplotlib.pyplot as plt
+from tensorflow import keras
+import numpy as np
+(x_train, y_train), (x_test, y_test) = keras.datasets.fashion_mnist.load_data()
+# There are 10 image classes in this dataset and each class has a mapping␣
+𝗌corresponding to the following labels:
+#0 T-shirt/top
+#1 Trouser
+#2 pullover
+#3 Dress
+#4 Coat
+#5 sandals
+#6 shirt
+#7 sneaker
+#8 bag
+#9 ankle boot
+# https://ml-course.github.io/master/09%20-%20Convolutional%20Neural%20Networks.
+𝗌pdf
+2
+[2]:
+[2]: <matplotlib.image.AxesImage at 0x79c0442ce190>
+[3]:
+[3]: <matplotlib.image.AxesImage at 0x79c04444ad50>
+3
+[5]:
+[6]:
+# Next, we will preprocess the data by scaling the pixel values to be between 0␣
+𝗌and 1, and then reshaping the images to be 28x28 pixels.
+x_train = x_train.astype('float32') / 255.0
+x_test = x_test.astype('float32') / 255.0
+x_train = x_train.reshape(-1, 28, 28, 1)
+x_test = x_test.reshape(-1, 28, 28, 1)
+# 28, 28 comes from width, height, 1 comes from the number of channels
+# -1 means that the length in that dimension is inferred.
+# This is done based on the constraint that the number of elements in an␣
+𝗌ndarray or Tensor when reshaped must remain the same.
+# each image is a row vector (784 elements) and there are lots of such rows␣
+𝗌(let it be n, so there are 784n elements). So TensorFlow can infer that -1␣
+𝗌is n.
+4
+[6]: (60000, 28, 28, 1)
+[7]:
+[7]: (10000, 28, 28, 1)
+[8]:
+[8]: (60000,)
+[9]:
+[9]: (10000,)
+[10]: # We will use a convolutional neural network (CNN) to classify the fashion␣
+𝗌items.
+# The CNN will consist of multiple convolutional layers followed by max pooling,
+# dropout, and dense layers. Here is the code for the model:
+model = keras.Sequential([
+keras.layers.Conv2D(32, (3,3), activation='relu', input_shape=(28,28,1)),
+# 32 filters (default), randomly initialized
+# 3*3 is Size of Filter
+# 28,28,1 size of Input Image
+# No zero-padding: every output 2 pixels less in every dimension
+# in Paramter shwon 320 is value of weights: (3x3 filter weights + 32 bias)␣
+𝗌* 32 filters
+# 32*3*3=288(Total)+32(bias)= 320
+keras.layers.MaxPooling2D((2,2)),
+# It shown 13 * 13 size image with 32 channel or filter or depth.
+keras.layers.Dropout(0.25),
+# Reduce Overfitting of Training sample drop out 25% Neuron
+keras.layers.Conv2D(64, (3,3), activation='relu'),
+# Deeper layers use 64 filters
+# 3*3 is Size of Filter
+# Observe how the input image on 28x28x1 is transformed to a 3x3x64 feature␣
+𝗌map
+# 13(Size)-3(Filter Size )+1(bias)=11 Size for Width and Height with 64␣
+𝗌Depth or filtter or channel
+# in Paramter shwon 18496 is value of weights: (3x3 filter weights + 64␣
+𝗌bias) * 64 filters
+# 64*3*3=576+1=577*32 + 32(bias)=18496
+5
+keras.layers.MaxPooling2D((2,2)),
+# It shown 5 * 5 size image with 64 channel or filter or depth.
+keras.layers.Dropout(0.25),
+keras.layers.Conv2D(128, (3,3), activation='relu'),
+# Deeper layers use 128 filters
+# 3*3 is Size of Filter
+# Observe how the input image on 28x28x1 is transformed to a 3x3x128␣
+𝗌feature map
+# It show 5(Size)-3(Filter Size )+1(bias)=3 Size for Width and Height with␣
+𝗌64 Depth or filtter or channel
+# 128*3*3=1152+1=1153*64 + 64(bias)= 73856
+# To classify the images, we still need a Dense and Softmax layer.
+# We need to flatten the 3x3x128 feature map to a vector of size 1152
+# https://medium.com/@iamvarman/
+𝗌how-to-calculate-the-number-of-parameters-in-the-cnn-5bd55364d7ca
+keras.layers.Flatten(),
+keras.layers.Dense(128, activation='relu'),
+# 128 Size of Node in Dense Layer
+# 1152*128 = 147584
+keras.layers.Dropout(0.25),
+keras.layers.Dense(10, activation='softmax')
+# 10 Size of Node another Dense Layer
+# 128*10+10 bias= 1290
+])
+/usr/local/lib/python3.11/distpackages/
+keras/src/layers/convolutional/base_conv.py:107: UserWarning: Do not
+pass an `input_shape`/`input_dim` argument to a layer. When using Sequential
+models, prefer using an `Input(shape)` object as the first layer in the model
+instead.
+[11]:
+super(). init (activity_regularizer=activity_regularizer,
+Model: "sequential"
+**kwargs)
+Layer (type)
+𝗌Param #
+Output Shape ␣
+conv2d (Conv2D)
+𝗌320
+(None, 26, 26, 32) ␣
+model.summary()
+6
+max_pooling2d (MaxPooling2D)
+𝗌 0
+(None, 13, 13, 32) ␣
+dropout (Dropout)
+𝗌 0
+(None, 13, 13, 32)
+␣
+conv2d_1 (Conv2D)
+𝗌18,496
+(None, 11, 11, 64) ␣
+max_pooling2d_1 (MaxPooling2D)
+𝗌 0
+(None, 5, 5, 64)
+␣
+dropout_1 (Dropout)
+𝗌 0
+(None, 5, 5, 64)
+␣
+conv2d_2 (Conv2D)
+𝗌73,856
+(None, 3, 3, 128) ␣
+flatten (Flatten)
+𝗌 0
+(None, 1152)
+␣
+dense (Dense)
+𝗌147,584
+(None, 128) ␣
+dropout_2 (Dropout)
+𝗌 0
+(None, 128)
+␣
+dense_1 (Dense)
+𝗌1,290
+(None, 10)
+␣
+Total params: 241,546 (943.54 KB)
+Trainable params: 241,546 (943.54 KB)
+Non-trainable params: 0 (0.00 B)
+[12]:
+model.compile(optimizer='adam', loss='sparse_categorical_crossentropy',␣
+7
+Epoch 1/10
+1875/1875 69s 35ms/step -
+accuracy: 0.0994 - loss: 2.3029 - val_accuracy: 0.1000 - val_loss: 2.3026
+Epoch 2/10
+1875/1875 82s 36ms/step -
+accuracy: 0.1012 - loss: 2.3027 - val_accuracy: 0.1000 - val_loss: 2.3027
+Epoch 3/10
+1875/1875 81s 35ms/step -
+accuracy: 0.0988 - loss: 2.3026 - val_accuracy: 0.1000 - val_loss: 2.3026
+Epoch 4/10
+1875/1875 70s 37ms/step -
+accuracy: 0.0991 - loss: 2.3027 - val_accuracy: 0.1000 - val_loss: 2.3026
+Epoch 5/10
+1875/1875 79s 36ms/step -
+accuracy: 0.0984 - loss: 2.3027 - val_accuracy: 0.1000 - val_loss: 2.3027
+Epoch 6/10
+1875/1875 82s 36ms/step -
+accuracy: 0.0971 - loss: 2.3027 - val_accuracy: 0.1000 - val_loss: 2.3026
+Epoch 7/10
+1875/1875 71s 38ms/step -
+accuracy: 0.0993 - loss: 2.3028 - val_accuracy: 0.1000 - val_loss: 2.3027
+Epoch 8/10
+1875/1875 78s 35ms/step -
+accuracy: 0.0986 - loss: 2.3027 - val_accuracy: 0.1000 - val_loss: 2.3026
+Epoch 9/10
+1875/1875 69s 37ms/step -
+accuracy: 0.0956 - loss: 2.3028 - val_accuracy: 0.1000 - val_loss: 2.3026
+[13]:
+Epoch 10/10
+1875/1875 83s 37ms/step -
+accuracy: 0.0992 - loss: 2.3028 - val_accuracy: 0.1000 - val_loss: 2.3027
+313/313 4s 11ms/step -
+accuracy: 0.1062 - loss: 2.3025
+Test accuracy: 0.10000000149011612
+=
